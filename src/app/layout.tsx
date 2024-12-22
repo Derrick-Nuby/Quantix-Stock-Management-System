@@ -1,7 +1,8 @@
 import { Crimson_Text, Roboto } from 'next/font/google';
 import "./globals.css";
 import Providers from "./providers";
-import { generateMetadata, viewport } from "./metadata";
+import { AppSidebar } from "@/components/AppSidebar";
+import { TopBar } from "@/components/top-bar";
 
 const crimsonText = Crimson_Text({
   weight: ['400', '600', '700'],
@@ -17,24 +18,27 @@ const roboto = Roboto({
   display: 'swap',
 });
 
-export { generateMetadata, viewport };
-
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning >
-      <body
-        className={`${crimsonText.variable} ${roboto.className} antialiased`}
-
-      >
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${crimsonText.variable} ${roboto.className} antialiased`}>
         <Providers>
-          {children}
+          <div className="flex h-screen bg-background">
+            <AppSidebar />
+            <div className="flex flex-col flex-1 overflow-hidden">
+              <TopBar />
+              <main className="flex-1 overflow-x-hidden overflow-y-auto p-6">
+                {children}
+              </main>
+            </div>
+          </div>
         </Providers>
       </body>
     </html>
   );
 }
+
