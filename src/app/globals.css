@@ -86,3 +86,10 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .br1px {
+    border: 1px solid red;
+    /* Custom class for 1px solid red border */
+  }
+}
