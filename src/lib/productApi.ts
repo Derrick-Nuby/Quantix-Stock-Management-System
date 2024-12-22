@@ -11,9 +11,10 @@ export const createProduct = async (productData: Omit<Product, 'id' | 'createdAt
   }
 };
 
-export const getAllProducts = async (params?: { category?: string, inStock?: boolean, page?: number, limit?: number; }): Promise<{ products: Product[], total: number; }> => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getAllProducts = async (): Promise<any> => {
   try {
-    const response = await axiosInstance.get('/products', { params });
+    const response = await axiosInstance.get('/products');
     return response.data;
   } catch (error) {
     throw new Error(handleAxiosError(error));

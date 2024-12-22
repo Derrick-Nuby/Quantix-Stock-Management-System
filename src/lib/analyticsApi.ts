@@ -1,14 +1,29 @@
-import axiosInstance from './axiosConfig';
-import { handleAxiosError } from '@/utils/errorHandler';
+import { handleAxiosError } from "@/utils/errorHandler";
+import axiosInstance from "./axiosConfig";
 
-interface DailySalesReport {
-  // Define the structure of your daily sales report here
-  date: string;
-  totalSales: number;
-  // Add other relevant fields
+interface ProductPerformance {
+  id: string;
+  name: string;
+  quantitySold: number;
+  revenue: number;
 }
 
-export const getDailySalesReport = async (params: { date?: string, startDate?: string, endDate?: string, year?: number, month?: number; }): Promise<DailySalesReport> => {
+interface AnalyticsReport {
+  totalSales: number;
+  totalRevenue: number;
+  itemsSold: number;
+  productPerformance: ProductPerformance[];
+  periodStart: string;
+  periodEnd: string;
+}
+
+export const getAnalyticsReport = async (params: {
+  date?: string,
+  startDate?: string,
+  endDate?: string,
+  year?: number,
+  month?: number;
+}): Promise<AnalyticsReport> => {
   try {
     const response = await axiosInstance.get('/analytics', { params });
     return response.data;
@@ -16,4 +31,3 @@ export const getDailySalesReport = async (params: { date?: string, startDate?: s
     throw new Error(handleAxiosError(error));
   }
 };
-

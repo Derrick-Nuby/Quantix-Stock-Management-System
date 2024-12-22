@@ -2,7 +2,7 @@ import { Sale } from '@prisma/client';
 import axiosInstance from './axiosConfig';
 import { handleAxiosError } from '@/utils/errorHandler';
 
-interface CreateSaleData {
+export interface CreateSaleData {
   items: Array<{
     productId: string;
     quantity: number;

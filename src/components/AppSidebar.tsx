@@ -14,16 +14,16 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Package, Tags, ShoppingCart, TrendingUp, BarChart2, ClipboardList, Settings } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, TrendingUp, BarChart2, Settings } from 'lucide-react';
 
 const navItems = [
   { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/products', icon: Package, label: 'Products' },
-  { href: '/categories', icon: Tags, label: 'Categories' },
+  // { href: '/categories', icon: Tags, label: 'Categories' },
   { href: '/sales', icon: ShoppingCart, label: 'Sales' },
   { href: '/purchases', icon: TrendingUp, label: 'Purchases' },
   { href: '/analytics', icon: BarChart2, label: 'Analytics' },
-  { href: '/inventory', icon: ClipboardList, label: 'Inventory' },
+  // { href: '/inventory', icon: ClipboardList, label: 'Inventory' },
   { href: '/settings', icon: Settings, label: 'Settings' },
 ];
 
@@ -38,13 +38,13 @@ export function AppSidebar() {
         </h2>
         <div className="space-y-1">
           <Button asChild variant="secondary" className="w-full justify-start">
-            <Link href="/sales/new">
+            <Link href="/create-sale">
               <ShoppingCart className="mr-2 h-4 w-4" />
               New Sale
             </Link>
           </Button>
           <Button asChild variant="secondary" className="w-full justify-start">
-            <Link href="/purchases/new">
+            <Link href="/create-purchase">
               <TrendingUp className="mr-2 h-4 w-4" />
               New Purchase
             </Link>

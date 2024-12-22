@@ -2,12 +2,17 @@ import axiosInstance from './axiosConfig';
 import { handleAxiosError } from '@/utils/errorHandler';
 
 interface DashboardSummary {
-  // Define the structure of your dashboard summary here
-  totalSales: number;
-  totalPurchases: number;
-  currentStock: number;
-  totalProfit: number;
-  // Add other relevant fields
+  todaySales: {
+    count: number;
+    total: number;
+  };
+  todayPurchases: {
+    count: number;
+    total: number;
+  };
+  lowStockProducts: number;
+  totalProducts: number;
+  totalCategories: number;
 }
 
 export const getDashboardSummary = async (): Promise<DashboardSummary> => {
@@ -18,4 +23,3 @@ export const getDashboardSummary = async (): Promise<DashboardSummary> => {
     throw new Error(handleAxiosError(error));
   }
 };
-
