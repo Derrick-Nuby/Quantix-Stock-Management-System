@@ -5,8 +5,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { createPurchase } from '@/lib/purchaseApi';
-import { createProduct, getAllProducts } from '@/lib/productApi';
+import { createSale, CreateSaleData } from '@/lib/salesApi';
+import { getAllProducts, createProduct } from '@/lib/productApi';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,37 +15,41 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-const purchaseItemSchema = z.object({
-  productId: z.string().optional(),
-  newProduct: z.object({
-    name: z.string().min(1, "Product name is required"),
-    buyingPrice: z.number().min(0, "Buying price must be positive"),
-    sellingPrice: z.number().min(0, "Selling price must be positive"),
-    categoryId: z.string().optional(),
-  }).optional(),
+const newProductSchema = z.object({
+  name: z.string().min(1, "Product name is required"),
+  buyingPrice: z.number().min(0, "Buying price must be positive"),
+  sellingPrice: z.number().min(0, "Selling price must be positive"),
+  categoryId: z.string().optional(),
+  image: z.string().optional(),
+  inStock: z.number().min(0, "In stock must be non-negative").optional(),
+});
+
+const saleItemSchema = z.object({
+  productId: z.string().min(1, "Product is required"),
+  newProduct: newProductSchema.optional(),
   quantity: z.number().min(1, "Quantity must be at least 1"),
   price: z.number().min(0, "Price must be positive"),
 });
 
-const purchaseSchema = z.object({
-  items: z.array(purchaseItemSchema).min(1, "At least one item is required"),
+const saleSchema = z.object({
+  items: z.array(saleItemSchema).min(1, "At least one item is required"),
 });
 
-type PurchaseFormData = z.infer<typeof purchaseSchema>;
+type SaleFormData = z.infer<typeof saleSchema>;
 
-export default function CreatePurchasePage() {
+export default function CreateSalePage() {
   const queryClient = useQueryClient();
 
-  const { data: products = [], isLoading: isLoadingProducts } = useQuery({
+  const { data: productsData, isLoading: isLoadingProducts } = useQuery({
     queryKey: ['products'],
     queryFn: getAllProducts,
     staleTime: 60000, // 1 minute
   });
 
-  const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<PurchaseFormData>({
-    resolver: zodResolver(purchaseSchema),
+  const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm<SaleFormData>({
+    resolver: zodResolver(saleSchema),
     defaultValues: {
-      items: [{ quantity: 1, price: 0 }],
+      items: [{ productId: '', quantity: 1, price: 0 }],
     },
   });
 
@@ -54,15 +58,15 @@ export default function CreatePurchasePage() {
     name: "items",
   });
 
-  const createPurchaseMutation = useMutation({
-    mutationFn: createPurchase,
+  const createSaleMutation = useMutation({
+    mutationFn: createSale,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['purchases'] });
-      toast.success("Purchase created successfully");
+      queryClient.invalidateQueries({ queryKey: ['sales'] });
+      toast.success("Sale created successfully");
     },
     onError: (error) => {
-      console.error('Failed to create purchase:', error);
-      toast.error("Failed to create purchase. Please try again.");
+      console.error('Failed to create sale:', error);
+      toast.error("Failed to create sale. Please try again.");
     },
   });
 
@@ -78,11 +82,16 @@ export default function CreatePurchasePage() {
     },
   });
 
-  const onSubmit = async (data: PurchaseFormData) => {
+  const onSubmit = async (data: SaleFormData) => {
     try {
-      const purchaseItems = await Promise.all(data.items.map(async (item) => {
+      const saleItems = await Promise.all(data.items.map(async (item) => {
         if (item.newProduct) {
-          const newProduct = await createProductMutation.mutateAsync(item.newProduct);
+          const newProduct = await createProductMutation.mutateAsync({
+            ...item.newProduct,
+            image: item.newProduct.image || '',
+            inStock: item.newProduct.inStock || 0,
+            categoryId: item.newProduct.categoryId || null,
+          });
           return {
             productId: newProduct.id,
             quantity: item.quantity,
@@ -90,16 +99,19 @@ export default function CreatePurchasePage() {
           };
         }
         return {
-          productId: item.productId!,
+          productId: item.productId,
           quantity: item.quantity,
           price: item.price,
         };
       }));
 
-      await createPurchaseMutation.mutateAsync({ items: purchaseItems });
+      const saleData: CreateSaleData = {
+        items: saleItems,
+      };
+      await createSaleMutation.mutateAsync(saleData);
     } catch (error) {
-      console.error('Failed to submit purchase:', error);
-      toast.error("An error occurred while creating the purchase. Please try again.");
+      console.error('Failed to submit sale:', error);
+      toast.error("An error occurred while creating the sale. Please try again.");
     }
   };
 
@@ -107,7 +119,7 @@ export default function CreatePurchasePage() {
     <div className="container mx-auto p-4">
       <Card>
         <CardHeader>
-          <CardTitle>Create Purchase</CardTitle>
+          <CardTitle>Create Sale</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -130,7 +142,7 @@ export default function CreatePurchasePage() {
                           onValueChange={(value) => {
                             field.onChange(value);
                             if (value === 'new') {
-                              setValue(`items.${index}.newProduct`, { name: '', buyingPrice: 0, sellingPrice: 0 });
+                              setValue(`items.${index}.newProduct`, { name: '', buyingPrice: 0, sellingPrice: 0, image: '', inStock: 0 });
                             } else {
                               setValue(`items.${index}.newProduct`, undefined);
                             }
@@ -145,7 +157,7 @@ export default function CreatePurchasePage() {
                               <SelectItem value="loading" disabled>Loading products...</SelectItem>
                             ) : (
                               <>
-                                {products.products?.map((product) => (
+                                {productsData?.products?.map((product: { id: string; name: string; }) => (
                                   <SelectItem key={product.id} value={product.id}>
                                     {product.name}
                                   </SelectItem>
@@ -157,6 +169,9 @@ export default function CreatePurchasePage() {
                         </Select>
                       )}
                     />
+                    {errors.items?.[index]?.productId && (
+                      <p className="text-sm text-red-500 mt-1">{errors.items[index]?.productId?.message}</p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor={`items.${index}.quantity`}>Quantity</Label>
@@ -167,6 +182,9 @@ export default function CreatePurchasePage() {
                         <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
                       )}
                     />
+                    {errors.items?.[index]?.quantity && (
+                      <p className="text-sm text-red-500 mt-1">{errors.items[index]?.quantity?.message}</p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor={`items.${index}.price`}>Price</Label>
@@ -177,6 +195,9 @@ export default function CreatePurchasePage() {
                         <Input type="number" step="0.01" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))} />
                       )}
                     />
+                    {errors.items?.[index]?.price && (
+                      <p className="text-sm text-red-500 mt-1">{errors.items[index]?.price?.message}</p>
+                    )}
                   </div>
                 </div>
                 {watch(`items.${index}.productId`) === 'new' && (
@@ -190,6 +211,9 @@ export default function CreatePurchasePage() {
                           control={control}
                           render={({ field }) => <Input {...field} />}
                         />
+                        {errors.items?.[index]?.newProduct?.name && (
+                          <p className="text-sm text-red-500 mt-1">{errors.items[index]?.newProduct?.name?.message}</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor={`items.${index}.newProduct.buyingPrice`}>Buying Price</Label>
@@ -200,6 +224,9 @@ export default function CreatePurchasePage() {
                             <Input type="number" step="0.01" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))} />
                           )}
                         />
+                        {errors.items?.[index]?.newProduct?.buyingPrice && (
+                          <p className="text-sm text-red-500 mt-1">{errors.items[index]?.newProduct?.buyingPrice?.message}</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor={`items.${index}.newProduct.sellingPrice`}>Selling Price</Label>
@@ -208,6 +235,27 @@ export default function CreatePurchasePage() {
                           control={control}
                           render={({ field }) => (
                             <Input type="number" step="0.01" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))} />
+                          )}
+                        />
+                        {errors.items?.[index]?.newProduct?.sellingPrice && (
+                          <p className="text-sm text-red-500 mt-1">{errors.items[index]?.newProduct?.sellingPrice?.message}</p>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor={`items.${index}.newProduct.image`}>Image URL</Label>
+                        <Controller
+                          name={`items.${index}.newProduct.image`}
+                          control={control}
+                          render={({ field }) => <Input {...field} />}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`items.${index}.newProduct.inStock`}>In Stock</Label>
+                        <Controller
+                          name={`items.${index}.newProduct.inStock`}
+                          control={control}
+                          render={({ field }) => (
+                            <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
                           )}
                         />
                       </div>
@@ -219,19 +267,19 @@ export default function CreatePurchasePage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => append({ quantity: 1, price: 0 })}
+              onClick={() => append({ productId: '', quantity: 1, price: 0 })}
               className="w-full"
             >
               <Plus className="mr-2 h-4 w-4" /> Add Item
             </Button>
-            <Button type="submit" className="w-full" disabled={createPurchaseMutation.isLoading}>
-              {createPurchaseMutation.isLoading ? (
+            <Button type="submit" className="w-full" disabled={createSaleMutation.isPending}>
+              {createSaleMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Purchase...
+                  Creating Sale...
                 </>
               ) : (
-                'Create Purchase'
+                'Create Sale'
               )}
             </Button>
           </form>

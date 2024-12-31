@@ -35,7 +35,7 @@ export default function CreateProductPage() {
     queryFn: getCategories,
   });
 
-  const { control, handleSubmit, formState: { errors } } = useForm<ProductFormData>({
+  const { control, handleSubmit, formState: { errors }, setValue } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: '',
@@ -91,7 +91,7 @@ export default function CreateProductPage() {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        control._fields.image._f.onChange(base64String);
+        setValue('image', base64String);
       };
       reader.readAsDataURL(file);
     }
@@ -192,8 +192,8 @@ export default function CreateProductPage() {
               </div>
             )}
 
-            <Button type="submit" className="w-full" disabled={createProductMutation.isLoading}>
-              {createProductMutation.isLoading ? (
+            <Button type="submit" className="w-full" disabled={createProductMutation.isPending}>
+              {createProductMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Creating Product...

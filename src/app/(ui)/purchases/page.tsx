@@ -2,22 +2,37 @@
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getSaleHistory } from '@/lib/salesApi';
+import { getPurchaseHistory } from '@/lib/purchaseApi';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import DatePickerWithRange from '@/components/date-picker-with-range';
+import { Purchase, PurchaseItem, Product } from '@prisma/client';
 
-export default function SalesPage() {
-  const [dateRange, setDateRange] = React.useState({ from: undefined, to: undefined });
+type PurchaseWithItems = Purchase & {
+  items: (PurchaseItem & {
+    product: Product;
+  })[];
+};
+
+interface PurchaseHistoryResponse {
+  purchases: PurchaseWithItems[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export default function PurchasesPage() {
+  const [dateRange, setDateRange] = React.useState<{ from: Date; to: Date; }>({ from: new Date(), to: new Date() });
   const [page, setPage] = React.useState(1);
   const limit = 10;
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['sales', page, limit, dateRange],
-    queryFn: () => getSaleHistory({
+  const { data, isLoading, isError } = useQuery<PurchaseHistoryResponse, Error>({
+    queryKey: ['purchases', page, limit, dateRange],
+    queryFn: () => getPurchaseHistory({
       startDate: dateRange.from?.toISOString(),
       endDate: dateRange.to?.toISOString(),
       page,
@@ -25,27 +40,21 @@ export default function SalesPage() {
     }),
   });
 
-  const totalSales = data?.sales.reduce((sum, sale) => sum + sale.total, 0) || 0;
-  const totalProfit = data?.sales.reduce((sum, sale) =>
-    sum + sale.items.reduce((itemSum, item) =>
-      itemSum + (item.price - item.product.buyingPrice) * item.quantity, 0
-    ), 0
-  ) || 0;
+  const totalPurchases = data?.purchases.reduce((sum, purchase) => sum + purchase.total, 0) || 0;
 
   if (isError) {
-    return <div className="text-center text-red-500">Error loading sales data</div>;
+    return <div className="text-center text-red-500">Error loading purchase data</div>;
   }
 
   return (
     <div className="container mx-auto p-4">
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold">Sales Overview</CardTitle>
+          <CardTitle className="text-3xl font-bold">Purchases Overview</CardTitle>
         </CardHeader>
         <CardContent className="grid md:grid-cols-2 gap-4">
           <div>
-            <p className="text-lg font-semibold">Total Sales: ${totalSales.toFixed(2)}</p>
-            <p className="text-lg font-semibold">Total Profit: ${totalProfit.toFixed(2)}</p>
+            <p className="text-lg font-semibold">Total Purchases: Rwf {totalPurchases.toFixed(2)}</p>
           </div>
           <div>
             <DatePickerWithRange
@@ -58,11 +67,11 @@ export default function SalesPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Sales History</CardTitle>
+          <CardTitle>Purchase History</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <SalesSkeleton />
+            <PurchasesSkeleton />
           ) : (
             <>
               <Table>
@@ -71,20 +80,18 @@ export default function SalesPage() {
                     <TableHead>Date</TableHead>
                     <TableHead>Total</TableHead>
                     <TableHead>Items</TableHead>
-                    <TableHead>Profit</TableHead>
+                    <TableHead>Average Price</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data?.sales.map((sale) => {
-                    const saleProfit = sale.items.reduce((sum, item) =>
-                      sum + (item.price - item.product.buyingPrice) * item.quantity, 0
-                    );
+                  {data?.purchases.map((purchase) => {
+                    const averagePrice = purchase.total / purchase.items.reduce((sum, item) => sum + item.quantity, 0);
                     return (
-                      <TableRow key={sale.id}>
-                        <TableCell>{new Date(sale.date).toLocaleDateString()}</TableCell>
-                        <TableCell>${sale.total.toFixed(2)}</TableCell>
-                        <TableCell>{sale.items.length}</TableCell>
-                        <TableCell>${saleProfit.toFixed(2)}</TableCell>
+                      <TableRow key={purchase.id}>
+                        <TableCell>{new Date(purchase.date).toLocaleDateString()}</TableCell>
+                        <TableCell>Rwf {purchase.total.toFixed(2)}</TableCell>
+                        <TableCell>{purchase.items.length}</TableCell>
+                        <TableCell>Rwf {averagePrice.toFixed(2)}</TableCell>
                       </TableRow>
                     );
                   })}
@@ -117,7 +124,7 @@ export default function SalesPage() {
   );
 }
 
-function SalesSkeleton() {
+function PurchasesSkeleton() {
   return (
     <>
       <div className="space-y-2">

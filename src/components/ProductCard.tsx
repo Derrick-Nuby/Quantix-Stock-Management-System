@@ -13,11 +13,11 @@ import { Product } from '@prisma/client';
 import Link from 'next/link';
 
 interface ProductCardProps extends Product {
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
-  onPurchase: (id: string) => void;
-  onSale: (id: string) => void;
-  onViewDetails: (id: string) => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onPurchase: () => void;
+  onSale: () => void;
+  onViewDetails: () => void;
 }
 
 export function ProductCard({
@@ -58,23 +58,23 @@ export function ProductCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(id)}>
+              <DropdownMenuItem onClick={onEdit}>
                 <Edit className="mr-2 h-4 w-4" />
                 <span>Edit</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDelete(id)} className="text-destructive">
+              <DropdownMenuItem onClick={onDelete} className="text-destructive">
                 <Trash2 className="mr-2 h-4 w-4" />
                 <span>Delete</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onPurchase(id)}>
+              <DropdownMenuItem onClick={onPurchase}>
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 <span>Purchase</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onSale(id)}>
+              <DropdownMenuItem onClick={onSale}>
                 <TrendingUp className="mr-2 h-4 w-4" />
                 <span>Sale</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onViewDetails(id)}>
+              <DropdownMenuItem onClick={onViewDetails}>
                 <Eye className="mr-2 h-4 w-4" />
                 <span>View Details</span>
               </DropdownMenuItem>
@@ -86,7 +86,7 @@ export function ProductCard({
         <Link href={`/products/${id}`} className="font-semibold text-lg">{name}</Link>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
-        <span className="text-xl font-bold">${sellingPrice.toFixed(2)}</span>
+        <span className="text-xl font-bold">Rwf {sellingPrice.toFixed(2)}</span>
       </CardFooter>
     </Card>
   );

@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getAllProducts } from '@/lib/productApi';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getAllProducts, deleteProduct } from '@/lib/productApi';
 import { Button } from "@/components/ui/button";
 import { ProductGrid } from '@/components/ProductGrid';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 export default function ProductsPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState({
     category: '',
     minPrice: '',
@@ -25,12 +27,26 @@ export default function ProductsPage() {
     queryFn: () => getAllProducts(),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: deleteProduct,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      toast.success('Product deleted successfully');
+    },
+    onError: (error) => {
+      console.error('Error deleting product:', error);
+      toast.error('Failed to delete product');
+    },
+  });
+
   const handleEdit = (id: string) => {
     router.push(`/products/${id}/edit`);
   };
 
   const handleDelete = (id: string) => {
-    console.log("the id you did is", id);
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      deleteMutation.mutate(id);
+    }
   };
 
   const handlePurchase = (id: string) => {
@@ -53,8 +69,6 @@ export default function ProductsPage() {
           <Link href="/products/new">Add New Product</Link>
         </Button>
       </div>
-
-
 
       {isLoading ? (
         <div>Loading...</div>

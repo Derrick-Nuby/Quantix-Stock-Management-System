@@ -55,7 +55,7 @@ export default function AnalyticsPage() {
                 <CardTitle>Total Revenue</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">${data?.totalRevenue.toFixed(2)}</p>
+                <p className="text-3xl font-bold">Rwf {data?.totalRevenue.toFixed(2)}</p>
               </CardContent>
             </Card>
             <Card>
@@ -115,7 +115,7 @@ export default function AnalyticsPage() {
                     <tr key={product.id}>
                       <td>{product.name}</td>
                       <td className="text-right">{product.quantitySold}</td>
-                      <td className="text-right">${product.revenue.toFixed(2)}</td>
+                      <td className="text-right">Rwf {product.revenue.toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>

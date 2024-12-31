@@ -14,7 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Package, ShoppingCart, TrendingUp, BarChart2, Settings } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, TrendingUp, BarChart2, Settings, Table2Icon } from 'lucide-react';
 
 const navItems = [
   { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -37,6 +37,12 @@ export function AppSidebar() {
           Quantix Inventory
         </h2>
         <div className="space-y-1">
+          <Button asChild variant="secondary" className="w-full justify-start">
+            <Link href="/store-table">
+              <Table2Icon className="mr-2 h-4 w-4" />
+              Home Table
+            </Link>
+          </Button>
           <Button asChild variant="secondary" className="w-full justify-start">
             <Link href="/create-sale">
               <ShoppingCart className="mr-2 h-4 w-4" />

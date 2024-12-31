@@ -26,11 +26,11 @@ export function ProductGrid({
         <ProductCard
           key={product.id}
           {...product}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onPurchase={onPurchase}
-          onSale={onSale}
-          onViewDetails={onViewDetails}
+          onEdit={() => onEdit(product.id)}
+          onDelete={() => onDelete(product.id)}
+          onPurchase={() => onPurchase(product.id)}
+          onSale={() => onSale(product.id)}
+          onViewDetails={() => onViewDetails(product.id)}
         />
       ))}
     </div>

@@ -36,11 +36,11 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
+                <CardTitle className="text-sm font-medium">Today&apos;s Sales</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${data?.todaySales.total.toFixed(2)}</div>
+                <div className="text-2xl font-bold">Rwf {data?.todaySales.total.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground">
                   {data?.todaySales.count} transactions
                 </p>
@@ -48,11 +48,11 @@ export default function DashboardPage() {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Today's Purchases</CardTitle>
+                <CardTitle className="text-sm font-medium">Today&apos;s Purchases</CardTitle>
                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${data?.todayPurchases.total.toFixed(2)}</div>
+                <div className="text-2xl font-bold">Rwf {data?.todayPurchases.total.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground">
                   {data?.todayPurchases.count} transactions
                 </p>
@@ -98,7 +98,7 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Today's Sales vs Purchases</CardTitle>
+              <CardTitle>Today&apos;s Sales vs Purchases</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -114,7 +114,7 @@ export default function DashboardPage() {
                       dataKey="value"
                     >
                       {pieChartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-Rwf {index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
                     <Legend />

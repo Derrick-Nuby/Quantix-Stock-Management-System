@@ -1,6 +1,11 @@
-import { Product } from '@prisma/client';
+import { Category, Product, Sale, SaleItem } from '@prisma/client';
 import axiosInstance from './axiosConfig';
 import { handleAxiosError } from '@/utils/errorHandler';
+
+type ProductWithRelations = Product & {
+  category: Category | null;
+  sales: (SaleItem & { sale: Sale; })[];
+};
 
 export const createProduct = async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> => {
   try {
@@ -21,7 +26,7 @@ export const getAllProducts = async (): Promise<any> => {
   }
 };
 
-export const getProduct = async (id: string): Promise<Product> => {
+export const getProduct = async (id: string): Promise<ProductWithRelations> => {
   try {
     const response = await axiosInstance.get(`/products/${id}`);
     return response.data;
